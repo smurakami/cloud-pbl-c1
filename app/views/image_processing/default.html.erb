@@ -1,0 +1,152 @@
+<script type="text/javascript"><!--
+
+// Stored image files (array of ArrayBuffer)
+var imgfiles = new Array();
+
+window.onload = function()
+{
+		// Check for File API support.
+		if ( window.File && window.FileReader && window.FileList && window.Blob  ) {
+				// All the File APIs are supported.
+				document.getElementById('afile').addEventListener('change', reloadFiles, false);
+				window.URL = window.URL || window.webkitURL;
+		} else {
+				alert('Oh.. Your browser does not fully support File APIs used in this page.');
+		}
+};
+
+function reloadFiles(evnt)
+{
+		var files = evnt.target.files;
+
+		// Remove all children
+		var o;
+		o = document.getElementById('canvasin');
+		while ( o.hasChildNodes() ) {
+				o.removeChild(o.firstChild);
+		}
+		o = document.getElementById('canvasout');
+		while ( o.hasChildNodes() ) {
+				o.removeChild(o.firstChild);
+		}
+		document.getElementById('progress').innerText = "None.";
+
+		// Disable buttons
+		document.getElementById('btnfr').disabled = true;
+		document.getElementById('btnat').disabled = true;
+
+		// Reset stored files
+		imgfiles = new Array();
+
+    // Load and display thumbnails.
+		var f;
+		var i;
+    for ( i = 0; f = files[i]; i++ ) {
+				// We only support jpeg file
+				if ( !f.type.match('image/jpeg') ) {
+						continue;
+				}
+				// File reader
+				var reader = new FileReader();
+				reader.onload = function(e) {
+						// Append to the stored image file list
+						imgfiles.push(e.target.result);
+						// Convert to blob from array buffer
+						var blob = new Blob([e.target.result], {type: "image/jpeg"});
+						// Create img element and display it
+						var img = document.createElement('img');
+						img.onload = function(e) {
+								// Clean up after the rendering
+								window.URL.revokeObjectURL(img.src);
+						};
+						img.src = window.URL.createObjectURL(blob);
+						img.style.width = "100%";
+						document.getElementById('canvasin').appendChild(img);
+						// Enable buttons
+						document.getElementById('btnfr').disabled = false;
+						document.getElementById('btnat').disabled = false;
+				}
+				// Read the image file as binary array buffer
+				reader.readAsArrayBuffer(f);
+		}
+}
+
+function applyImgProc(scrptpath)
+{
+		// Remove all children
+		var o;
+		o = document.getElementById('canvasout');
+		while ( o.hasChildNodes() ) {
+				o.removeChild(o.firstChild);
+		}
+
+		for ( var i in imgfiles ) {
+				var arrbufin = imgfiles[i];
+				// Create an XMLHttpRequest instance to send the data to a remote server
+				var req = new XMLHttpRequest();
+				req.open('POST', scrptpath, true); // async
+				req.setRequestHeader("Content-Type", "image/jpeg");
+				req.setRequestHeader("X-CSRF-Token", document.getElementById('authenticity_token').value);
+				// Use arraybuffer instead of blob
+				// because Safari wrongly handles blob as string
+				req.responseType = 'arraybuffer';
+				req.onload = function(evnt) {
+						// Check the HTTP response status
+						if ( this.status == 200 ) {
+								//var blob = this.response;
+								var blob = new Blob([this.response], {type: "image/jpeg"});
+								var img = document.createElement('img');
+								img.onload = function(e) {
+										// Clean up after the rendering
+										window.URL.revokeObjectURL(img.src);
+								};
+								img.src = window.URL.createObjectURL(blob);
+								img.style.width = "100%";
+								document.getElementById('canvasout').appendChild(img);
+								document.getElementById('progress').innerText = "Done.";
+						}
+				}
+				// Sending array buffer is deprecaded and it is recommended to use
+				// ArrayBufferView but Safari has a problem with it.
+				req.send(arrbufin);
+				//req.send(new Uint8Array(arrbufin));
+		}
+}
+
+function applyFaceRecognition()
+{
+		document.getElementById('progress').innerText = "Processing face recognition...";
+		applyImgProc("./facerecog");
+}
+
+function applyAdaptiveThreshold()
+{
+		document.getElementById('progress').innerText = "Processing adaptive thresholding...";
+		applyImgProc("./adaptive");
+}
+
+//-->
+</script>
+
+</head>
+
+<body>
+<h1>Image processing software sample</h1>
+<%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+Load JPEG file: <input type="file" id="afile" name="afile" /><br />
+Apply <input type="button" id="btnfr" value="face recognition"
+  disabled="disabled" onclick="applyFaceRecognition();" /><br />
+Apply <input type="button" id="btnat" value="adaptive thresholding algorithm"
+  disabled="disabled" onclick="applyAdaptiveThreshold();" /><br />
+
+<h2>Input image</h2>
+<output id="canvasin"></output>
+
+<h2>Output image</h2>
+Status: <span id="progress">None</span><br />
+<output id="canvasout"></output>
+
+<hr>
+<small>Use the information provided on this site on your own responsibility.</small>
+<address style="font-size:90%;">(C) 2013-2014 Hirochika Asai, The University of Tokyo.  All rights reserved.</address>
+
