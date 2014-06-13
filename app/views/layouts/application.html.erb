@@ -10,6 +10,15 @@
 </head>
 <body>
 
+	<form action="http://hakuhin.jp/test.cgi" enctype="multipart/form-data" method="post" >
+
+		<input type="file" name="input_file0"><br>
+		<input type="file" name="input_file1"><br>
+
+		<input type="button" value="Upload">
+
+	</form>
+	
 <%= yield %>
 
 </body>
