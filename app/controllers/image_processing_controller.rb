@@ -53,7 +53,8 @@ class ImageProcessingController < ApplicationController
     yoshio_detect = OpenCV::CvHaarClassifierCascade::load("./haarcascade_frontalface_alt.xml")
     yoshio_detect.detect_objects(yoshio, :scale_factor => 1.1, :min_neighbors => 3).each { |rect|
         #  yoshio.rectangle! rect.top_left, rect.bottom_right, :color => OpenCV::CvColor::Red, :thickness => 5
-        yoshio_face = IplImage.new rect.height, rect.width
+        yoshio_face = OpenCV::IplImage.new rect.height, rect.width
+        yoshio_rect = rect
         yoshio.set_roi rect
         yoshio.copy yoshio_face
         yoshio.reset_roi
@@ -62,14 +63,16 @@ class ImageProcessingController < ApplicationController
     ## Apply the face  recognition
     detector = OpenCV::CvHaarClassifierCascade::load("./haarcascade_frontalface_alt.xml")
     detector.detect_objects(img, :scale_factor => 1.1, :min_neighbors => 3).each { |rect|
-        #      img.rectangle! rect.top_left, rect.bottom_right, :color => OpenCV::CvColor::Red, :thickness => 5
-        #img.set_roi rect
-        #yoshio_face.copy img
+        #img.rectangle! rect.top_left, rect.bottom_right, :color => OpenCV::CvColor::Red, :thickness => 5
+              img.set_roi rect
+              yoshio_face = yoshio_face.resize OpenCV::CvSize.new rect.height, rect.width
+              yoshio_face.copy img
+              img.reset_roi
     }
     
     ## Create a temporary file and save the output image there
     temp = Tempfile::open(['facerecog', '.jpg'], :encoding => 'ascii-8bit')
-    yoshio_face.save(temp.path)
+    img.save(temp.path)
     ## Render the saved image
     send_file temp.path, :type => 'image/jpeg', :disposition => 'inline'
     ## Close and delete the temporary file
