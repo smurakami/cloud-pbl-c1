@@ -1,0 +1,26 @@
+<動作説明>
+下側の「ファイルを選択」で画像をアップ
+face recognition:アップした画像の顔を、あらかじめ“指定した画像”の顔で置き換える
+adaptive thresholding algorithm:画像の顔を認識して囲む（テスト用に二値化から変更）
+
+画像指定の記述：app/controllers/image_processing~ : facerecog関数内(63行)
+画像保存先：app/assets/images/
+
+
+
+<おすすめ>
+同じ集合写真（app/asset/images/soccer.imgなど）をベース画像、差し替え画像両方に指定するとおもしろいかも
+
+
+
+<できたこと・やること>
+とりあえず、ベース画像・差し替え画像共に多人数対応しました。
+今後は顔切り取りの精度向上、viewの変更点とのすり合わせ、をやるのかな。
+
+
+
+※注意
+画像はjpgのみ対応。
+railsその他のバージョンやパスが違うと動かないので
+Gemfile, Gemfile.lock, config/database.yml の記述を適宜変更してください
+（自分の環境ではエラーが出まくった）
