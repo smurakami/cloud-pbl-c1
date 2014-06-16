@@ -7,22 +7,9 @@
 <meta name="copyright" content="(C) 2013-2014 Hirochika Asai, The University of Tokyo.  All rights reserved." />
 <title>Image processing software sample page &mdash; SaaS</title>
 <%= csrf_meta_tags %>
+
 </head>
 <body>
-/*ここより改変*/
-
-<table>
-
-	<form action="http://hakuhin.jp/test.cgi" enctype="multipart/form-data" method="post" >
-
-		<input type="file" name="input_file0"><br>
-		<input type="file" name="input_file1"><br>
-
-		<input type="button" value="Upload" onclick="OnClickFunc();">
-
-	</form>
-	
-/*ここまで*/
 <%= yield %>
 </table>
 </body>

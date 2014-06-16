@@ -15,13 +15,13 @@ window.onload = function()
 		}
 };
 
-function reloadFiles(evnt)
+function reloadFiles(evnt, tag_name)
 {
 		var files = evnt.target.files;
 
 		// Remove all children
 		var o;
-		o = document.getElementById('canvasin');
+		o = document.getElementById(tag_name);
 		while ( o.hasChildNodes() ) {
 				o.removeChild(o.firstChild);
 		}
@@ -61,7 +61,10 @@ function reloadFiles(evnt)
 						};
 						img.src = window.URL.createObjectURL(blob);
 						img.style.width = "100%";
-						document.getElementById('canvasin').appendChild(img);
+						img.class = "img-rounded";
+						img.alt = "non_picture";
+						img.max_width = "100%";
+						document.getElementById(tag_name).appendChild(img);
 						// Enable buttons
 						document.getElementById('btnfr').disabled = false;
 						document.getElementById('btnat').disabled = false;
@@ -128,9 +131,151 @@ function applyAdaptiveThreshold()
 //-->
 </script>
 
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+<style type="text/css">
+  body { padding-top: 70px; }
+</style>
+
 </head>
 
 <body>
+  <div class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <a href="../" class="navbar-brand">Group6 C-1</a>
+        <button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+      </div>
+      <div class="navbar-collapse collapse" id="navbar-main">
+        <ul class="nav navbar-nav">
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="themes">Themes <span class="caret"></span></a>
+            <ul class="dropdown-menu" aria-labelledby="themes">
+              <li><a href="../default/">Default</a></li>
+              <li class="divider"></li>
+              <li><a href="../amelia/">Amelia</a></li>
+              <li><a href="../united/">United</a></li>
+              <li><a href="../yeti/">Yeti</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="../help/">Help</a>
+          </li>
+          <li>
+            <a href="http://www.ci.i.u-tokyo.ac.jp/site/?cloud-pbl">Cloud PBL</a>
+          </li>
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="download">Download <span class="caret"></span></a>
+            <ul class="dropdown-menu" aria-labelledby="download">
+              <li><a href="./bootstrap.min.css">bootstrap.min.css</a></li>
+              <li><a href="./bootstrap.css">bootstrap.css</a></li>
+              <li class="divider"></li>
+              <li><a href="./variables.less">variables.less</a></li>
+              <li><a href="./bootswatch.less">bootswatch.less</a></li>
+            </ul>
+          </li>
+        </ul>
+	
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="https://edu.jar.jp/redmine/projects/group-6-c1" target="_blank">RedMine</a></li>
+        </ul>
+	
+      </div>
+    </div>
+  </div>
+
+
+<table>
+
+  <form action="http://hakuhin.jp/test.cgi" enctype="multipart/form-data" method="post" >
+    
+    <div class="container">
+      <div id="header">
+        <h1>Source Pictures</h1>
+      </div>
+      <div class="row">
+	<div class="col-lg-4">
+	  <div class="row">
+ 	    <input id="lefile1" type="file" name="input_file0" style="display:none"><br>
+ 	    <div class="input-group">
+	      <input id="photoCover1" class="form-control" type="text" placeholder="Source Picture">
+ 	      <span class="input-group-btn">
+ 		<button class="btn btn-default" type="button" onclick="$('input[id=lefile1]').click();">Browse</button>
+ 	      </span>
+ 	    </div>
+	    <script type="text/javascript">
+	      $('input[id=lefile1]').change(function(ev) {
+	      reloadFiles(ev, "canvas1");
+	      $('#photoCover1').val($(this).val());
+	      });
+	    </script>
+	  </div>
+	  <div class="row">
+	    <div align="center">
+	      <output id="canvas1">
+		<img src="/assets/images/140_non_picture.svg" alt="non_picture" class="img-rounded" max-width="100%">
+	      </output>
+	    </div>
+	  </div>
+	</div>
+	
+	<div class="col-lg-1">
+	  <p></p>
+	</div>
+
+	<div class="col-lg-4">
+	  <div class="row">
+	    <input id="lefile2" type="file" name="input_file1" style="display:none"><br>
+	    <div class="input-group">
+	      <!--input id="photoCover2" class="form-control uneditable-input" type="text" -->
+	      <input id="photoCover2" class="form-control" type="text"  placeholder="Face Picture"></input>
+	      <span class="input-group-btn">
+		<button class="btn btn-default" type="button" onclick="$('input[id=lefile2]').click();">Browse</button>
+	      </span>
+	    </div>
+	    <script type="text/javascript">
+	      $('input[id=lefile2]').change(function(ev) {
+	      reloadFiles(ev, "canvas2");
+	      $('#photoCover2').val($(this).val());
+	      });
+	    </script>
+	  </div>
+	  <div class="row">
+	    <div align="center">
+	      <output id="canvas2">
+		<img src="images/140_non_picture.svg" alt="non_picture" class="img-rounded"  max-width="100%">
+	      </output>
+	    </div>
+	  </div>
+	</div>
+      </div>
+      <div id="footer">
+	<div class="row">
+	  <p></p>
+	</div>
+	<div align="right">
+	  <button class="btn btn-primary" onclick="OnClickFunc();">Submit</button>
+	</div>
+      </div>
+    </div>
+  </form>
+</table>	
+
+
+
+<div class="container">
+  <div id="header">
+    <h1>Result Pictures</h1>
+    Status: <span id="progress">None</span><br />
+    <output id="canvasout"></output>
+  </div>
+</div>
+
 <h1>Image processing software sample</h1>
 <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
 Load JPEG file: <input type="file" id="afile" name="afile" /><br />
@@ -142,9 +287,9 @@ Apply <input type="button" id="btnat" value="adaptive thresholding algorithm"
 <h2>Input image</h2>
 <output id="canvasin"></output>
 
-<h2>Output image</h2>
-Status: <span id="progress">None</span><br />
-<output id="canvasout"></output>
+<!-- <h2>Output image</h2> -->
+<!-- Status: <span id="progress">None</span><br /> -->
+<!-- <output id="canvasout"></output> -->
 
 <hr>
 <small>Use the information provided on this site on your own responsibility.</small>
