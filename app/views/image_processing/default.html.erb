@@ -83,8 +83,10 @@ function applyImgProc(scrptpath)
 				o.removeChild(o.firstChild);
 		}
 
-		for ( var i in imgfiles ) {
-				var arrbufin = imgfiles[i];
+		//		for ( var i in imgfiles ) {
+                                var data = new FormData();
+				data.append('file[]',document.getElementById('lefile1').files[0]);
+				data.append('file[]',document.getElementById('lefile2').files[0]);
 				// Create an XMLHttpRequest instance to send the data to a remote server
 				var req = new XMLHttpRequest();
 				req.open('POST', scrptpath, true); // async
@@ -111,9 +113,9 @@ function applyImgProc(scrptpath)
 				}
 				// Sending array buffer is deprecaded and it is recommended to use
 				// ArrayBufferView but Safari has a problem with it.
-				req.send(arrbufin);
+				req.send(data);
 				//req.send(new Uint8Array(arrbufin));
-		}
+				//		}
 }
 
 function applyFaceRecognition()
@@ -126,6 +128,13 @@ function applyAdaptiveThreshold()
 {
 		document.getElementById('progress').innerText = "Processing adaptive thresholding...";
 		applyImgProc("./adaptive");
+}
+
+
+function applyFaceSwap()
+{
+		document.getElementById('progress').innerText = "Processing face swaping...";
+		applyImgProc("./faceswap");
 }
 
 //-->
