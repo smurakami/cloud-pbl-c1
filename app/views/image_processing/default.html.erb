@@ -5,6 +5,25 @@ var imgfiles = new Array();
 
 window.onload = function()
 {
+             $("#result_form")
+             .bind("ajax:complete", function(data){
+	        alert("HEY")
+	         // Check the HTTP response status
+	         if ( this.status == 200 ) {
+	         //var blob = data;
+	             var blob = new Blob([this.response], {type: "image/jpeg"});
+		     var img = document.createElement('img');
+		     img.onload = function(e) {
+		     // Clean up after the rendering
+		     window.URL.revokeObjectURL(img.src);
+		     };
+		     img.src = window.URL.createObjectURL(blob);
+		     img.style.width = "100%";
+		     document.getElementById('canvasout').appendChild(img);
+		     document.getElementById('progress').innerText = "Done.";
+	     }
+             });
+
 		// Check for File API support.
 		if ( window.File && window.FileReader && window.FileList && window.Blob  ) {
 				// All the File APIs are supported.
@@ -17,7 +36,10 @@ window.onload = function()
 
 function reloadFiles(evnt, tag_name)
 {
+                if(tag_name === undefined) tag_name="canvasin";
 		var files = evnt.target.files;
+		console.log("File Event ");
+		console.log(files);
 
 		// Remove all children
 		var o;
@@ -36,7 +58,7 @@ function reloadFiles(evnt, tag_name)
 		document.getElementById('btnat').disabled = true;
 
 		// Reset stored files
-		imgfiles = new Array();
+		//imgfiles = new Array();
 
     // Load and display thumbnails.
 		var f;
@@ -50,7 +72,9 @@ function reloadFiles(evnt, tag_name)
 				var reader = new FileReader();
 				reader.onload = function(e) {
 						// Append to the stored image file list
+						console.log("imgfiles : ");
 						imgfiles.push(e.target.result);
+						console.log(imgfiles);
 						// Convert to blob from array buffer
 						var blob = new Blob([e.target.result], {type: "image/jpeg"});
 						// Create img element and display it
@@ -83,21 +107,45 @@ function applyImgProc(scrptpath)
 				o.removeChild(o.firstChild);
 		}
 
+		console.log("send");
 		//		for ( var i in imgfiles ) {
-                                var data = new FormData();
-				data.append('file[]',document.getElementById('lefile1').files[0]);
-				data.append('file[]',document.getElementById('lefile2').files[0]);
-				// Create an XMLHttpRequest instance to send the data to a remote server
-				var req = new XMLHttpRequest();
-				req.open('POST', scrptpath, true); // async
-				req.setRequestHeader("Content-Type", "image/jpeg");
-				req.setRequestHeader("X-CSRF-Token", document.getElementById('authenticity_token').value);
+		
+                var data = new FormData();
+		console.log(imgfiles);
+		console.log("files");
+		console.log(imgfiles[0]);
+		data.append("aaaa", "bbb")
+		//data.append('file1',imgfiles[0]);
+		//data.append('file2',imgfiles[1]);
+		data.append('file1',document.getElementById('lefile1').files[0]);
+		data.append('file2',document.getElementById('lefile2').files[0]);
+		//console.log(document.getElementById('lefile1'));
+		//console.log(document.getElementById('lefile2').files[0]);
+		// Create an XMLHttpRequest instance to send the data to a remote server
+//		var req = new XMLHttpRequest();
+
+//				alert();
+
+//				req.open('POST', scrptpath, true); // async
+//				req.setRequestHeader("Content-Type", false);
+//				req.setRequestHeader("X-CSRF-Token", document.getElementById('authenticity_token').value);
 				// Use arraybuffer instead of blob
 				// because Safari wrongly handles blob as string
-				req.responseType = 'arraybuffer';
-				req.onload = function(evnt) {
+//				req.responseType = 'arraybuffer';
+
+
+		$.ajax({
+		url: 'faceswap',
+		data: data,
+		cache: false,
+		contentType: false,
+		processData: false,
+		type: 'POST',
+		success: function(data){
+
+//				req.onload = function(evnt) {
 						// Check the HTTP response status
-						if ( this.status == 200 ) {
+//						if ( this.status == 200 ) {
 								//var blob = this.response;
 								var blob = new Blob([this.response], {type: "image/jpeg"});
 								var img = document.createElement('img');
@@ -109,12 +157,17 @@ function applyImgProc(scrptpath)
 								img.style.width = "100%";
 								document.getElementById('canvasout').appendChild(img);
 								document.getElementById('progress').innerText = "Done.";
-						}
-				}
+//						}
+//				}
+		}
+		});			
+
 				// Sending array buffer is deprecaded and it is recommended to use
 				// ArrayBufferView but Safari has a problem with it.
-				req.send(data);
-				//req.send(new Uint8Array(arrbufin));
+				//req.send(data);
+//				//req.send(imgfiles[0]);
+ //                               req.setRequestHeader('Cache-Control','no-cache');
+//				req.send(new Uint8Array(imgfiles[0], imgfiles[1]));
 				//		}
 }
 
@@ -200,8 +253,12 @@ function applyFaceSwap()
 
 
 <table>
-
-  <form action="http://hakuhin.jp/test.cgi" enctype="multipart/form-data" method="post" >
+<form accept-charset="UTF-8" action="facerecog" data-remote="true" enctype="multipart/form-data" id="result_form" method="post"><div style="display:none"><input name="utf8" type="hidden" value="&#x2713;" /></div>
+  <label>保存したいファイル:<br/>
+  <input id="uppic" name="uppic" size="100" type="file" /></label>
+  <input name="commit" type="submit" value="アップロード" />
+</form>
+  <form name="pictures" action="" enctype="multipart/form-data" method="post" >
     
     <div class="container">
       <div id="header">
@@ -268,7 +325,7 @@ function applyFaceSwap()
 	  <p></p>
 	</div>
 	<div align="right">
-	  <button class="btn btn-primary" onclick="OnClickFunc();">Submit</button>
+	  <button class="btn btn-primary" onclick="applyFaceSwap();">Submit</button>
 	</div>
       </div>
     </div>
@@ -296,9 +353,9 @@ Apply <input type="button" id="btnat" value="adaptive thresholding algorithm"
 <h2>Input image</h2>
 <output id="canvasin"></output>
 
-<!-- <h2>Output image</h2> -->
-<!-- Status: <span id="progress">None</span><br /> -->
-<!-- <output id="canvasout"></output> -->
+ <h2>Output image</h2>
+ Status: <span id="progress">None</span><br />
+ <output id="canvasout"></output>
 
 <hr>
 <small>Use the information provided on this site on your own responsibility.</small>

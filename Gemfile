@@ -44,3 +44,5 @@ gem 'ruby-opencv', "~> 0.0.10", :require => 'opencv'
 gem 'therubyracer'
 
 gem 'bootstrap-sass', '3.0.2.0'
+
+gem 'remotipart', '~> 1.0'

@@ -58,4 +58,5 @@ Rails.application.routes.draw do
   root 'image_processing#default'
   post 'adaptive' => 'image_processing#adaptive'
   post 'facerecog' => 'image_processing#facerecog'
+  post 'faceswap' => 'image_processing#faceswap'
 end

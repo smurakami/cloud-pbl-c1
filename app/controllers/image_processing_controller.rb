@@ -1,5 +1,7 @@
 class ImageProcessingController < ApplicationController
 
+  skip_before_filter :verify_authenticity_token ,:only=>[:adaptive, :facerecog, :faceswap]
+
   ## Front page
   def default
       render "image_processing/default"
@@ -9,6 +11,9 @@ class ImageProcessingController < ApplicationController
   ## Adaptive filtering
   ##
   def adaptive
+    logger.debug("params:")
+    logger.debug(@params)
+
     ## Receive the posted data
     temp = Tempfile::open(['adaptive-in', '.jpg'], :encoding => 'ascii-8bit')
     while blk = request.body.read(4096)
@@ -34,11 +39,85 @@ class ImageProcessingController < ApplicationController
   ## Face recognition
   ##
   def facerecog
+    logger.debug("params:")
+    logger.debug(params)
+    logger.debug(params[:uppic])
+    logger.debug(params[:action])
+
+    file = params[:uppic]
+    name = file.original_filename
+    logger.debug(name)
+##    File.open("tmp/#{name}", 'wb') { |f| f.write(file.read) }
+
+    ## Receive the posted data
+##    temp = Tempfile::open(['tmp/#{name}', '.jpg'], :encoding => 'ascii-8bit')
+   temp = Tempfile::open(['adaptive-in', '.jpg'], :encoding => 'ascii-8bit')
+##    while blk = request.body.read(4096)
+##      temp.write(blk)
+##    end
+    temp.write(file.read)
+    logger.debug(temp.path)
+    img = OpenCV::IplImage.load(temp.path, OpenCV::CV_LOAD_IMAGE_COLOR)
+    temp.close
+
+    ##
+    temp = File.open('app/assets/images/yoshio.jpg', 'r')
+    yoshio = OpenCV::IplImage.load(temp.path, OpenCV::CV_LOAD_IMAGE_COLOR)
+    temp.close
+
+    ## Apply the face  recognition to yoshio
+    yoshio_face = nil
+    
+    yoshio_detect = OpenCV::CvHaarClassifierCascade::load("./haarcascade_frontalface_alt.xml")
+    yoshio_detect.detect_objects(yoshio, :scale_factor => 1.1, :min_neighbors => 3).each { |rect|
+        #  yoshio.rectangle! rect.top_left, rect.bottom_right, :color => OpenCV::CvColor::Red, :thickness => 5
+        yoshio_face = OpenCV::IplImage.new rect.height, rect.width
+        yoshio_rect = rect
+        yoshio.set_roi rect
+        yoshio.copy yoshio_face
+        yoshio.reset_roi
+    }
+
+    ## Apply the face  recognition
+    detector = OpenCV::CvHaarClassifierCascade::load("./haarcascade_frontalface_alt.xml")
+    detector.detect_objects(img, :scale_factor => 1.1, :min_neighbors => 3).each { |rect|
+        #img.rectangle! rect.top_left, rect.bottom_right, :color => OpenCV::CvColor::Red, :thickness => 5
+              img.set_roi rect
+              yoshio_face = yoshio_face.resize OpenCV::CvSize.new rect.height, rect.width
+              yoshio_face.copy img
+              img.reset_roi
+    }
+    
+    ## Create a temporary file and save the output image there
+    temp = Tempfile::open(['facerecog', '.jpg'], :encoding => 'ascii-8bit')
+    img.save(temp.path)
+    ## Render the saved image
+    send_file temp.path, :type => 'image/jpeg', :disposition => 'inline'
+    ## Close and delete the temporary file
+    temp.close
+  end
+
+  def faceswap
+    logger.debug("params:")
+    logger.debug(@params)
+    logger.debug("params:")
+    logger.debug(params)
+    logger.debug(params[:file1])
+    logger.debug(params[:file2])
+
+
+    file1 = params[:file1]
+    file2 = params[:file2]
+##    logger.debug(file1.original_filename)
+##    logger.debug(file2.original_filename)
     ## Receive the posted data
     temp = Tempfile::open(['adaptive-in', '.jpg'], :encoding => 'ascii-8bit')
-    while blk = request.body.read(4096)
+    while blk = file1.read(4096)
       temp.write(blk)
     end
+##    while blk = request.body.read(4096)
+##      temp.write(blk)
+##    end
     img = OpenCV::IplImage.load(temp.path, OpenCV::CV_LOAD_IMAGE_COLOR)
     temp.close
 
