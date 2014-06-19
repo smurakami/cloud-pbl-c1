@@ -5,29 +5,9 @@ var imgfiles = new Array();
 
 window.onload = function()
 {
-             $("#result_form")
-             .bind("ajax:complete", function(data){
-	        alert("HEY")
-	         // Check the HTTP response status
-	         if ( this.status == 200 ) {
-	         //var blob = data;
-	             var blob = new Blob([this.response], {type: "image/jpeg"});
-		     var img = document.createElement('img');
-		     img.onload = function(e) {
-		     // Clean up after the rendering
-		     window.URL.revokeObjectURL(img.src);
-		     };
-		     img.src = window.URL.createObjectURL(blob);
-		     img.style.width = "100%";
-		     document.getElementById('canvasout').appendChild(img);
-		     document.getElementById('progress').innerText = "Done.";
-	     }
-             });
-
 		// Check for File API support.
 		if ( window.File && window.FileReader && window.FileList && window.Blob  ) {
 				// All the File APIs are supported.
-				document.getElementById('afile').addEventListener('change', reloadFiles, false);
 				window.URL = window.URL || window.webkitURL;
 		} else {
 				alert('Oh.. Your browser does not fully support File APIs used in this page.');
@@ -47,15 +27,7 @@ function reloadFiles(evnt, tag_name)
 		while ( o.hasChildNodes() ) {
 				o.removeChild(o.firstChild);
 		}
-		o = document.getElementById('canvasout');
-		while ( o.hasChildNodes() ) {
-				o.removeChild(o.firstChild);
-		}
 		document.getElementById('progress').innerText = "None.";
-
-		// Disable buttons
-		document.getElementById('btnfr').disabled = true;
-		document.getElementById('btnat').disabled = true;
 
 		// Reset stored files
 		//imgfiles = new Array();
@@ -90,8 +62,8 @@ function reloadFiles(evnt, tag_name)
 						img.max_width = "100%";
 						document.getElementById(tag_name).appendChild(img);
 						// Enable buttons
-						document.getElementById('btnfr').disabled = false;
-						document.getElementById('btnat').disabled = false;
+//						document.getElementById('btnfr').disabled = false;
+//						document.getElementById('btnat').disabled = false;
 				}
 				// Read the image file as binary array buffer
 				reader.readAsArrayBuffer(f);
@@ -107,28 +79,14 @@ function applyImgProc(scrptpath)
 				o.removeChild(o.firstChild);
 		}
 
-		console.log("send");
-		//		for ( var i in imgfiles ) {
-		
-
-
                 var data = new FormData();
-		data.append("aaaa", "bbb")
 		data.append('file1',document.getElementById('lefile1').files[0]);
 		data.append('file2',document.getElementById('lefile2').files[0]);
-		// because Safari wrongly handles blob as string
-
-
 
 		var req = new XMLHttpRequest();
 		req.open('POST', "faceswap", true); // async
-		//req.setRequestHeader("Content-Type", false);
-		//req.setRequestHeader("content-type",
-                //"multipart/form-data");
 		req.setRequestHeader("Process-Data", false);
     		req.setRequestHeader("X-CSRF-Token", document.getElementById('authenticity_token').value);
-		// Use arraybuffer instead of blob
-		// because Safari wrongly handles blob as string
 		req.responseType = 'arraybuffer';
 		req.onload = function(evnt) {
 		    // Check the HTTP response status
@@ -146,43 +104,8 @@ function applyImgProc(scrptpath)
 		    document.getElementById('progress').innerText = "Done.";
 		    }
 		};
-		// Sending array buffer is deprecaded and it is recommended to use
-		// ArrayBufferView but Safari has a problem with it.
 		req.send(data);
 
-
-
-
-
-		var content, newContent="";
-		$.ajax({
-		     url: 'facerecog',
-		     data: data,
-		     cache: false,
-		     contentType: false,
-		     processData: false,
-		     type: 'POST',
-		     //dataType: 'application/octet-stream',
-		     
-		     success: function(data){
-		          console.log("Data coming!!");
-		          //var blob = this.response;
-		          var blob = new Blob([data], {type: "image/jpeg"});
-			  console.log(blob);
-		          var img = document.createElement('img');
-		          img.onload = function(e) {
-		               // Clean up after the rendering
-		               window.URL.revokeObjectURL(img.src);
-		          };
-	          	  img.src = window.URL.createObjectURL(blob);
-		          img.style.width = "100%";
-		          document.getElementById('canvasout').appendChild(img);
-		          document.getElementById('progress').innerText = "Done.";
-		     },
-		     error: function(XMLHttpRequest, textStatus, errorThrown){
-		          alert("XMLHttpRequest : " + XMLHttpRequest.status + " " + "textStatus : " + textStatus + " " + "errorThrown : " + errorThrown.message);
-		     }
-		});
 }
 
 function applyFaceRecognition()
@@ -332,40 +255,32 @@ function applyFaceSwap()
 	<div class="row">
 	  <p></p>
 	</div>
-	<div align="right">
-	  <button class="btn btn-primary" onclick="applyFaceSwap();">Submit</button>
-	</div>
       </div>
     </div>
   </form>
+  <div class="container">
+    <div align="right">
+      <button class="btn btn-primary btn-lg" onclick="applyFaceSwap();">Submit</button>
+    </div>
+  </div>
 </table>	
 
 
 
 <div class="container">
   <div id="header">
-    <h1>Result Pictures</h1>
-    Status: <span id="progress">None</span><br />
-    <output id="canvasout"></output>
+    <div align="center">
+      <div class="row">
+	<div class="col-md-6 col-md-offset-2">
+	  <h1>Result Pictures</h1>
+	  Status: <span id="progress">None</span><br />
+	  <output id="canvasout">
+		<img src="images/140_non_picture.svg" alt="non_picture" class="img-rounded"  max-width="100%">
+	  </output>
+	</div>
+      </div>
+    </div>
   </div>
 </div>
 
-<h1>Image processing software sample</h1>
 <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
-Load JPEG file: <input type="file" id="afile" name="afile" /><br />
-Apply <input type="button" id="btnfr" value="face recognition"
-  disabled="disabled" onclick="applyFaceRecognition();" /><br />
-Apply <input type="button" id="btnat" value="adaptive thresholding algorithm"
-  disabled="disabled" onclick="applyAdaptiveThreshold();" /><br />
-
-<h2>Input image</h2>
-<output id="canvasin"></output>
-
- <h2>Output image</h2>
- Status: <span id="progress">None</span><br />
- <!--output id="canvasout"></output-->
-
-<hr>
-<small>Use the information provided on this site on your own responsibility.</small>
-<address style="font-size:90%;">(C) 2013-2014 Hirochika Asai, The University of Tokyo.  All rights reserved.</address>
-

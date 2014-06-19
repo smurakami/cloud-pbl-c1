@@ -11,8 +11,6 @@ class ImageProcessingController < ApplicationController
   ## Adaptive filtering
   ##
   def adaptive
-    logger.debug("params:")
-    logger.debug(@params)
 
     ## Receive the posted data
     temp = Tempfile::open(['adaptive-in', '.jpg'], :encoding => 'ascii-8bit')
@@ -39,24 +37,11 @@ class ImageProcessingController < ApplicationController
   ## Face recognition
   ##
   def facerecog
-    logger.debug("params:")
-    logger.debug(params)
-    logger.debug(params[:file1])
-    logger.debug(params[:file2])
-
-    file = params[:file1]
-    name = file.original_filename
-    logger.debug(name)
-##    File.open("tmp/#{name}", 'wb') { |f| f.write(file.read) }
-
     ## Receive the posted data
-##    temp = Tempfile::open(['tmp/#{name}', '.jpg'], :encoding => 'ascii-8bit')
-   temp = Tempfile::open(['adaptive-in', '.jpg'], :encoding => 'ascii-8bit')
-##    while blk = request.body.read(4096)
-##      temp.write(blk)
-##    end
-    temp.write(file.read)
-    logger.debug(temp.path)
+    temp = Tempfile::open(['adaptive-in', '.jpg'], :encoding => 'ascii-8bit')
+    while blk = request.body.read(4096)
+      temp.write(blk)
+    end
     img = OpenCV::IplImage.load(temp.path, OpenCV::CV_LOAD_IMAGE_COLOR)
     temp.close
 
@@ -98,38 +83,24 @@ class ImageProcessingController < ApplicationController
   end
 
   def faceswap
-    logger.debug("params:")
-    logger.debug(@params)
-    logger.debug("params:")
-    logger.debug(params)
-    logger.debug(params[:file1])
-    logger.debug(params[:file2])
-
-
     file1 = params[:file1]
     file2 = params[:file2]
-##    logger.debug(file1.original_filename)
-##    logger.debug(file2.original_filename)
     ## Receive the posted data
     temp = Tempfile::open(['adaptive-in1', '.jpg'], :encoding => 'ascii-8bit')
     while blk = file1.read(4096)
       temp.write(blk)
     end
 
-    temp2 = Tempfile::open(['adaptive-in2', '.jpg'], :encoding => 'ascii-8bit')
-    while blk = file2.read(4096)
-      temp2.write(blk)
-    end
-
-     
-##    while blk = request.body.read(4096)
-##      temp.write(blk)
-##    end
     img = OpenCV::IplImage.load(temp.path, OpenCV::CV_LOAD_IMAGE_COLOR)
     temp.close
 
     ##
-    temp = File.open('app/assets/images/yoshio.jpg', 'r')
+    ##temp = File.open('app/assets/images/yoshio.jpg', 'r')
+    temp = Tempfile::open(['adaptive-in2', '.jpg'], :encoding => 'ascii-8bit')
+    while blk = file2.read(4096)
+      temp.write(blk)
+    end
+
     yoshio = OpenCV::IplImage.load(temp.path, OpenCV::CV_LOAD_IMAGE_COLOR)
     temp.close
 
