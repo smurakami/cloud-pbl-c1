@@ -110,65 +110,79 @@ function applyImgProc(scrptpath)
 		console.log("send");
 		//		for ( var i in imgfiles ) {
 		
+
+
                 var data = new FormData();
-		console.log(imgfiles);
-		console.log("files");
-		console.log(imgfiles[0]);
 		data.append("aaaa", "bbb")
-		//data.append('file1',imgfiles[0]);
-		//data.append('file2',imgfiles[1]);
 		data.append('file1',document.getElementById('lefile1').files[0]);
 		data.append('file2',document.getElementById('lefile2').files[0]);
-		//console.log(document.getElementById('lefile1'));
-		//console.log(document.getElementById('lefile2').files[0]);
-		// Create an XMLHttpRequest instance to send the data to a remote server
-//		var req = new XMLHttpRequest();
-
-//				alert();
-
-//				req.open('POST', scrptpath, true); // async
-//				req.setRequestHeader("Content-Type", false);
-//				req.setRequestHeader("X-CSRF-Token", document.getElementById('authenticity_token').value);
-				// Use arraybuffer instead of blob
-				// because Safari wrongly handles blob as string
-//				req.responseType = 'arraybuffer';
+		// because Safari wrongly handles blob as string
 
 
+
+		var req = new XMLHttpRequest();
+		req.open('POST', "faceswap", true); // async
+		//req.setRequestHeader("Content-Type", false);
+		//req.setRequestHeader("content-type",
+                //"multipart/form-data");
+		req.setRequestHeader("Process-Data", false);
+    		req.setRequestHeader("X-CSRF-Token", document.getElementById('authenticity_token').value);
+		// Use arraybuffer instead of blob
+		// because Safari wrongly handles blob as string
+		req.responseType = 'arraybuffer';
+		req.onload = function(evnt) {
+		    // Check the HTTP response status
+		    if ( this.status == 200 ) {
+		        //var blob = this.response;
+		        var blob = new Blob([this.response], {type: "image/jpeg"});
+		        var img = document.createElement('img');
+		        img.onload = function(e) {
+		        // Clean up after the rendering
+		        window.URL.revokeObjectURL(img.src);
+		    };
+		    img.src = window.URL.createObjectURL(blob);
+		    img.style.width = "100%";
+		    document.getElementById('canvasout').appendChild(img);
+		    document.getElementById('progress').innerText = "Done.";
+		    }
+		};
+		// Sending array buffer is deprecaded and it is recommended to use
+		// ArrayBufferView but Safari has a problem with it.
+		req.send(data);
+
+
+
+
+
+		var content, newContent="";
 		$.ajax({
-		url: 'faceswap',
-		data: data,
-		cache: false,
-		contentType: false,
-		processData: false,
-		type: 'POST',
-		success: function(data){
-
-//				req.onload = function(evnt) {
-						// Check the HTTP response status
-//						if ( this.status == 200 ) {
-								//var blob = this.response;
-								var blob = new Blob([this.response], {type: "image/jpeg"});
-								var img = document.createElement('img');
-								img.onload = function(e) {
-										// Clean up after the rendering
-										window.URL.revokeObjectURL(img.src);
-								};
-								img.src = window.URL.createObjectURL(blob);
-								img.style.width = "100%";
-								document.getElementById('canvasout').appendChild(img);
-								document.getElementById('progress').innerText = "Done.";
-//						}
-//				}
-		}
-		});			
-
-				// Sending array buffer is deprecaded and it is recommended to use
-				// ArrayBufferView but Safari has a problem with it.
-				//req.send(data);
-//				//req.send(imgfiles[0]);
- //                               req.setRequestHeader('Cache-Control','no-cache');
-//				req.send(new Uint8Array(imgfiles[0], imgfiles[1]));
-				//		}
+		     url: 'facerecog',
+		     data: data,
+		     cache: false,
+		     contentType: false,
+		     processData: false,
+		     type: 'POST',
+		     //dataType: 'application/octet-stream',
+		     
+		     success: function(data){
+		          console.log("Data coming!!");
+		          //var blob = this.response;
+		          var blob = new Blob([data], {type: "image/jpeg"});
+			  console.log(blob);
+		          var img = document.createElement('img');
+		          img.onload = function(e) {
+		               // Clean up after the rendering
+		               window.URL.revokeObjectURL(img.src);
+		          };
+	          	  img.src = window.URL.createObjectURL(blob);
+		          img.style.width = "100%";
+		          document.getElementById('canvasout').appendChild(img);
+		          document.getElementById('progress').innerText = "Done.";
+		     },
+		     error: function(XMLHttpRequest, textStatus, errorThrown){
+		          alert("XMLHttpRequest : " + XMLHttpRequest.status + " " + "textStatus : " + textStatus + " " + "errorThrown : " + errorThrown.message);
+		     }
+		});
 }
 
 function applyFaceRecognition()
@@ -253,13 +267,7 @@ function applyFaceSwap()
 
 
 <table>
-<form accept-charset="UTF-8" action="facerecog" data-remote="true" enctype="multipart/form-data" id="result_form" method="post"><div style="display:none"><input name="utf8" type="hidden" value="&#x2713;" /></div>
-  <label>保存したいファイル:<br/>
-  <input id="uppic" name="uppic" size="100" type="file" /></label>
-  <input name="commit" type="submit" value="アップロード" />
-</form>
-  <form name="pictures" action="" enctype="multipart/form-data" method="post" >
-    
+  <form name="pictures" action="" enctype="multipart/form-data" method="post" >    
     <div class="container">
       <div id="header">
         <h1>Source Pictures</h1>
@@ -355,7 +363,7 @@ Apply <input type="button" id="btnat" value="adaptive thresholding algorithm"
 
  <h2>Output image</h2>
  Status: <span id="progress">None</span><br />
- <output id="canvasout"></output>
+ <!--output id="canvasout"></output-->
 
 <hr>
 <small>Use the information provided on this site on your own responsibility.</small>
