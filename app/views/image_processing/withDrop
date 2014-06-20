@@ -324,6 +324,7 @@ function onDragOver(event) {
     event.preventDefault();
 }
 </script>
+
   <div class="navbar navbar-default navbar-fixed-top">
     <div class="container">
       <div class="navbar-header">
