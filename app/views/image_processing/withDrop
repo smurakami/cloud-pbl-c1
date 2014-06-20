@@ -1,0 +1,462 @@
+<script type="text/javascript"><!--
+
+// Stored image files (array of ArrayBuffer)
+var imgfiles = new Array();
+
+window.onload = function()
+{
+// Check for File API support.
+if ( window.File && window.FileReader && window.FileList && window.Blob ) {
+// All the File APIs are supported.
+window.URL = window.URL || window.webkitURL;
+} else {
+alert('Oh.. Your browser does not fully support File APIs used in this page.');
+}
+};
+
+function reloadFiles(evnt, tag_name)
+{
+                if(tag_name === undefined) tag_name="canvasin";
+var files = evnt.target.files;
+console.log("File Event ");
+console.log(files);
+
+// Remove all children
+var o;
+o = document.getElementById(tag_name);
+while ( o.hasChildNodes() ) {
+o.removeChild(o.firstChild);
+}
+document.getElementById('progress').innerText = "None.";
+
+// Reset stored files
+//imgfiles = new Array();
+
+    // Load and display thumbnails.
+var f;
+var i;
+    for ( i = 0; f = files[i]; i++ ) {
+// We only support jpeg file
+if ( !f.type.match('image/jpeg') ) {
+continue;
+}
+// File reader
+var reader = new FileReader();
+reader.onload = function(e) {
+// Append to the stored image file list
+console.log("imgfiles : ");
+imgfiles.push(e.target.result);
+console.log(imgfiles);
+// Convert to blob from array buffer
+var blob = new Blob([e.target.result], {type: "image/jpeg"});
+// Create img element and display it
+var img = document.createElement('img');
+img.onload = function(e) {
+// Clean up after the rendering
+window.URL.revokeObjectURL(img.src);
+};
+img.src = window.URL.createObjectURL(blob);
+img.style.width = "100%";
+img.class = "img-rounded";
+img.alt = "non_picture";
+img.max_width = "100%";
+document.getElementById(tag_name).appendChild(img);
+// Enable buttons
+// document.getElementById('btnfr').disabled = false;
+// document.getElementById('btnat').disabled = false;
+}
+// Read the image file as binary array buffer
+reader.readAsArrayBuffer(f);
+}
+}
+
+function applyImgProc(scrptpath)
+{
+// Remove all children
+var o;
+o = document.getElementById('canvasout');
+while ( o.hasChildNodes() ) {
+o.removeChild(o.firstChild);
+}
+
+                var data = new FormData();
+data.append('file1',document.getElementById('lefile1').files[0]);
+data.append('file2',document.getElementById('lefile2').files[0]);
+
+var req = new XMLHttpRequest();
+req.open('POST', "faceswap", true); // async
+req.setRequestHeader("Process-Data", false);
+     req.setRequestHeader("X-CSRF-Token", document.getElementById('authenticity_token').value);
+req.responseType = 'arraybuffer';
+req.onload = function(evnt) {
+// Check the HTTP response status
+if ( this.status == 200 ) {
+//var blob = this.response;
+var blob = new Blob([this.response], {type: "image/jpeg"});
+var img = document.createElement('img');
+img.onload = function(e) {
+// Clean up after the rendering
+window.URL.revokeObjectURL(img.src);
+};
+img.src = window.URL.createObjectURL(blob);
+img.style.width = "100%";
+document.getElementById('canvasout').appendChild(img);
+document.getElementById('progress').innerText = "Done.";
+}
+};
+req.send(data);
+
+}
+
+function applyFaceRecognition()
+{
+document.getElementById('progress').innerText = "Processing face recognition...";
+applyImgProc("./facerecog");
+}
+
+function applyAdaptiveThreshold()
+{
+document.getElementById('progress').innerText = "Processing adaptive thresholding...";
+applyImgProc("./adaptive");
+}
+
+
+function applyFaceSwap()
+{
+document.getElementById('progress').innerText = "Processing face swaping...";
+applyImgProc("./faceswap");
+}
+//added function
+function drugOnPic()
+{
+	// obtain ID element of "drug" 
+	var element = document.getElementById("drug");
+	// for IE 6 or less
+	if (!e)	e = window.event;
+	// ------------------------------------------------------------
+	// event acts on drag
+	// ------------------------------------------------------------
+	element.ondragstart = function (e){
+		// get DataTransfer object 
+		var data_transfer = e.dataTransfer;
+		// code below is test code
+		// test of transfer
+		//console.log(data_transfer);
+		
+		//stage2
+		// store text data
+		data_transfer.setData("text","１つ目のテスト文字列です。");
+		try{
+
+			// HTML 文字列データを格納する
+			data_transfer.setData("text/html","<span>２つ目のテスト文字列です。</span>");
+
+		}
+		catch(e){}
+	// ------------------------------------------------------------
+	// ドラッグしながらマウスカーソルを移動した時に実行されるイベント
+	// ------------------------------------------------------------
+		// ------------------------------------------------------------
+		// デフォルトのドラッグを無効化（ドロップ操作を許可）
+		// ------------------------------------------------------------
+		if(e.preventDefault){
+			// デフォルトのドラッグを無効化する
+			e.preventDefault();
+		}else{
+			// デフォルトのドラッグを無効化する（アタッチイベント利用時や、InternetExplorer 8 以前の場合）
+			return false;
+		}
+	};
+	// ------------------------------------------------------------
+	// ドロップしたときに実行されるイベント
+	// ------------------------------------------------------------
+	element.ondrop = function (e){
+		// ------------------------------------------------------------
+		// DataTransfer オブジェクトを取得する
+		// ------------------------------------------------------------
+		var data_transfer = e.dataTransfer;
+		// ------------------------------------------------------------
+		// データを取得する
+		// ------------------------------------------------------------
+		// テキスト文字列の取得を試みる
+		var str = data_transfer.getData("text");
+		console.log("text:" + str);
+
+		// URL 文字列の取得を試みる
+		var str = data_transfer.getData("url");
+		console.log("url:" + str);
+
+		// ------------------------------------------------------------
+		// デフォルトのドロップを無効化
+		// ------------------------------------------------------------
+		if(e.preventDefault){
+			// デフォルトのドロップを無効化する
+			e.preventDefault();
+		}else{
+			// デフォルトのドロップを無効化する（アタッチイベント利用時や、InternetExplorer 8 以前の場合）
+			return false;
+		}
+	};
+
+function DragOverFunc(e){
+	// InternetExplorer 用
+	if (!e)	e = window.event;
+	// ------------------------------------------------------------
+	// デフォルトのドラッグを無効化（ドロップ操作を許可）
+	// ------------------------------------------------------------
+	if(e.preventDefault){
+		// デフォルトのドラッグを無効化する
+		e.preventDefault();
+	}else{
+		// デフォルトのドラッグを無効化する（アタッチイベント利用時や、InternetExplorer 8 以前の場合）
+		return false;
+	}
+}
+
+// ------------------------------------------------------------
+// ドロップした時に実行される関数
+// ------------------------------------------------------------
+function DropFunc(e){
+	// InternetExplorer 用
+	if (!e)	e = window.event;
+	// ------------------------------------------------------------
+	// DataTransfer オブジェクトを取得する
+	// ------------------------------------------------------------
+	var data_transfer = e.dataTransfer;
+	// ------------------------------------------------------------
+	// テキストを取得する（いらない？）
+	// ------------------------------------------------------------
+	var str = data_transfer.getData("text");
+	console.log("text:" + str);
+	// ------------------------------------------------------------
+	// データを順番に取り出す（HTML5 世代）
+	// ------------------------------------------------------------
+	var types = data_transfer.types;
+	if(types){
+	var num = types.length;
+	console.log("タイプ総数:" + num);
+		var i;
+		for(i=0;i < num;i++){
+			var type = types[i];
+			var data = data_transfer.getData(type);
+			console.log("--- No." + i + " ---");
+			console.log("type:" + type);
+			console.log("data:" + data);
+		}
+	}
+	// ------------------------------------------------------------
+	// ファイルを取得する（HTML5 世代）
+	// ------------------------------------------------------------
+	var file_list = data_transfer.files;
+	if(file_list){
+		var num = file_list.length;
+		console.log("ファイル総数:" + num);
+		var i;
+		for(i=0;i < num;i++){
+			var file = file_list[i];
+			console.log("--- No." + i + " ---");
+			console.log("ファイル名:" + file.name);
+			console.log("ファイルサイズ:" + file.size);
+			console.log("ファイルの種類:" + file.type);
+		}
+	}
+	// ------------------------------------------------------------
+	// デフォルトのドロップを無効化
+	// ------------------------------------------------------------
+	if(e.preventDefault){
+		// デフォルトのドロップを無効化する
+		e.preventDefault();
+	}else{
+		// デフォルトのドロップを無効化する（アタッチイベント利用時や、InternetExplorer 8 以前の場合）
+		return false;
+	}
+}
+// ------------------------------------------------------------
+// リッスンを開始する
+// ------------------------------------------------------------
+// イベントリスナーに対応している
+	if(element.addEventListener){
+	// ドラッグ中に、マウスカーソルがエレメント上を移動すると実行されるイベント
+		element.addEventListener("dragover",DragOverFunc);
+	// ドロップしたときに実行されるイベント
+		element.addEventListener("drop",DropFunc);
+	// アタッチイベントに対応している
+	}else if(element.attachEvent){
+		// ドラッグ中に、マウスカーソルがエレメント上を移動すると実行されるイベント
+		element.attachEvent("ondragover",DragOverFunc);
+		// ドロップしたときに実行されるイベント
+		element.attachEvent("ondrop",DropFunc);
+	// イベントハンドラを使用する
+	}else{
+		// ドラッグ中に、マウスカーソルがエレメント上を移動すると実行されるイベント
+		element.ondragover = DragOverFunc;
+		// ドロップしたときに実行されるイベント
+		element.ondrop = DropFunc;
+	}
+} 
+	
+	
+
+//-->
+//-->
+</script>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+<style type="text/css">
+  body { padding-top: 70px; }
+</style>
+
+</head>
+
+<body>
+<div id="drug" draggable="true" style="width:400px; height:300px; background:#fcc;"></div>
+
+  <div class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <a href="../" class="navbar-brand">Group6 C-1</a>
+        <button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+      </div>
+      <div class="navbar-collapse collapse" id="navbar-main">
+        <ul class="nav navbar-nav">
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="themes">Themes <span class="caret"></span></a>
+            <ul class="dropdown-menu" aria-labelledby="themes">
+              <li><a href="../default/">Default</a></li>
+              <li class="divider"></li>
+              <li><a href="../amelia/">Amelia</a></li>
+              <li><a href="../united/">United</a></li>
+              <li><a href="../yeti/">Yeti</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="../help/">Help</a>
+          </li>
+          <li>
+            <a href="http://www.ci.i.u-tokyo.ac.jp/site/?cloud-pbl">Cloud PBL</a>
+          </li>
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="download">Download <span class="caret"></span></a>
+            <ul class="dropdown-menu" aria-labelledby="download">
+              <li><a href="./bootstrap.min.css">bootstrap.min.css</a></li>
+              <li><a href="./bootstrap.css">bootstrap.css</a></li>
+              <li class="divider"></li>
+              <li><a href="./variables.less">variables.less</a></li>
+              <li><a href="./bootswatch.less">bootswatch.less</a></li>
+            </ul>
+          </li>
+        </ul>
+
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="https://edu.jar.jp/redmine/projects/group-6-c1" target="_blank">RedMine</a></li>
+        </ul>
+
+      </div>
+    </div>
+  </div>
+
+
+<table>
+  <form name="pictures" action="" enctype="multipart/form-data" method="post" >
+    <div class="container">
+      <div id="header">
+        <h1>Source Pictures</h1>
+      </div>
+      <div class="row">
+<div class="col-lg-4">
+<div class="row">
+  <input id="lefile1" type="file" name="input_file0" style="display:none"><br>
+  <div class="input-group">
+<input id="photoCover1" class="form-control" type="text" placeholder="Source Picture">
+  <span class="input-group-btn">
+  <button class="btn btn-default" type="button" onclick="$('input[id=lefile1]').click();">Browse</button>
+  </span>
+  </div>
+<script type="text/javascript">
+$('input[id=lefile1]').change(function(ev) {
+reloadFiles(ev, "canvas1");
+$('#photoCover1').val($(this).val());
+});
+</script>
+</div>
+<div class="row">
+<div align="center">
+<output id="canvas1">
+<img src="/assets/images/140_non_picture.svg" alt="non_picture" class="img-rounded" max-width="100%">
+</output>
+</div>
+</div>
+</div>
+
+<div class="col-lg-1">
+<p></p>
+</div>
+
+<div class="col-lg-4">
+<div class="row">
+<input id="lefile2" type="file" name="input_file1" style="display:none"><br>
+<div class="input-group">
+<!--input id="photoCover2" class="form-control uneditable-input" type="text" -->
+<input id="photoCover2" class="form-control" type="text" placeholder="Face Picture"></input>
+<span class="input-group-btn">
+<button class="btn btn-default" type="button" onclick="$('input[id=lefile2]').click();">Browse</button>
+</span>
+</div>
+<script type="text/javascript">
+$('input[id=lefile2]').change(function(ev) {
+reloadFiles(ev, "canvas2");
+$('#photoCover2').val($(this).val());
+});
+</script>
+</div>
+<div class="row">
+<div align="center">
+<output id="canvas2">
+<img src="images/140_non_picture.svg" alt="non_picture" class="img-rounded" max-width="100%">
+</output>
+</div>
+</div>
+</div>
+      </div>
+      <div id="footer">
+<div class="row">
+<p></p>
+</div>
+      </div>
+    </div>
+  </form>
+  <div class="container">
+    <div align="right">
+      <button class="btn btn-primary btn-lg" onclick="applyFaceSwap();">Submit</button>
+    </div>
+  </div>
+</table>	
+
+
+
+<div class="container">
+  <div id="header">
+    <div align="center">
+      <div class="row">
+<div class="col-md-6 col-md-offset-2">
+<h1>Result Pictures</h1>
+Status: <span id="progress">None</span><br />
+<output id="canvasout">
+<img src="images/140_non_picture.svg" alt="non_picture" class="img-rounded" max-width="100%">
+</output>
+</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+
+
+
