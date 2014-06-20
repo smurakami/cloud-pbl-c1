@@ -140,6 +140,112 @@ function applyFaceSwap()
 </head>
 
 <body>
+
+<div id="drop" style="width:700px; height:300px; padding:10px; border:3px solid" ondragover="onDragOver(event)" ondrop="onDrop(event)" ></div>
+
+<script type="text/javascript">
+var disp  = document.getElementById("disp");
+function onDrop(event) {
+  var text = event.dataTransfer.getData("text/plain");
+  drop.innerHTML = text;
+  event.preventDefault();
+}
+
+<div class="container">
+<div style = "border:2px  solid black;">
+<canvas id = "canvas" style = "position:relative;width:1000px;height:1000px;top:0px;left:200px; border:2px  solid black;" ondrop="dropIt(event);" ondragover="event.preventDefault();"> </canvas>    
+</div>
+<div>
+    <input type="file" id="fileElem" accept="image/*" style="display:none" >
+    <div id="fileSelect" class="drop-area">Select some files</div>
+</div>
+    <div id="thumbnail"></div>
+</div>
+
+<script type="text/javascript">
+
+
+function dragIt(event) {
+event.dataTransfer.setData("URL", event.target.id)
+};
+
+
+function dropIt(event) {
+  var theData = event.dataTransfer.getData("URL");
+  dt = document.getElementById(theData);
+  alert(dt.width);
+  alert(dt.height);
+  event.preventDefault();
+  var c = document.getElementById("canvas");
+  var ctx = c.getContext('2d');
+  ctx.drawImage(dt, 0, 0);      
+};
+
+
+var count = 0;
+var fileSelect = document.getElementById("fileSelect"),
+fileElem = document.getElementById("fileElem");
+
+
+fileElem.addEventListener("change",function(e){
+  var files = this.files
+  handleFiles(files)
+},false)  
+
+
+fileSelect.addEventListener("click", function (e) {
+    fileElem.click();
+  e.preventDefault(); 
+}, false);
+
+
+function handleFiles(files) {  
+  for (var i = 0; i < files.length; i++) {  
+    var file = files[i];    
+    var imageType = /image.*/; 
+
+    if(!file.type.match(imageType)){
+      console.log("Not an Image");
+      continue;
+    }
+
+    var image = document.createElement("img");
+    var thumbnail = document.getElementById("thumbnail");
+    image.file = file;
+
+    function handlefilereader(evt){
+    var target = evt.target || evt.srcElement;
+    image.src = evt.target.result;     
+    }
+
+    if(document.all) {
+            image.src = document.getElementById('fileElem').value;
+            }
+            else {
+
+    var reader = new FileReader()
+    reader.onload = handlefilereader;
+    reader.readAsDataURL(file);
+    }
+    image.id = count;
+    count++;
+    thumbnail.appendChild(image);
+    alert(image.width);
+    image.draggable = true;
+    image.ondragstart = dragIt;
+  }
+}
+
+
+
+
+
+
+
+function onDragOver(event) {
+    event.preventDefault();
+}
+</script>
   <div class="navbar navbar-default navbar-fixed-top">
     <div class="container">
       <div class="navbar-header">
