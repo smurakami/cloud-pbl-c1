@@ -40,8 +40,10 @@ gem 'spring',        group: :development
 
 gem 'ruby-opencv', "~> 0.0.10", :require => 'opencv'
 
-gem 'therubyracer'
+# gem 'therubyracer'
 
-gem 'bootstrap-sass', '3.0.2.0'
+# gem 'bootstrap-sass', '3.0.2.0'
 
-gem 'remotipart', '~> 1.0'
+# gem 'remotipart', "~> 1.0"
+
+# gem 'libv8', "~> 3.16.14.0"
